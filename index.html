@@ -37,8 +37,17 @@
     </style>
 </head>
 <body>
-    <pre><code class="language-cpp">int main(){
-    return ((int(*)(void))nullptr)();
+    <pre><code class="language-cpp">class Zero{
+public:
+    int operator()() const {
+        return (long int)this;
+    }
+private:
+    Zero() = delete;
+};
+    
+int main(void) {
+    return (*(Zero *)nullptr)();
 }</code></pre>
     <script src="script/prism.js"></script>
 </body>
