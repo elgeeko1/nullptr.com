@@ -4,51 +4,61 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>nullptr</title>
     <meta name="description" content="return nullptr;" />
-    <link href="style/prism.css" rel="stylesheet" />
+    <meta name="theme-color" content="#090a0c">
+    <meta name="color-scheme" content="dark">
+    <link href="style/site.css" rel="stylesheet" />
     <link rel="apple-touch-icon" sizes="180x180" href="img/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="img/favicon-16x16.png">
     <link rel="manifest" href="site.webmanifest">
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            background-color: #1e1e1e;
-            color: #f4f4f4;
-        }
-        pre {
-            background-color: #2d2d2d;
-            color: #f4f4f4;
-            padding: 1rem;
-            border-radius: 8px;
-            font-size: 1rem;
-            line-height: 1.5;
-            overflow: auto;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-    </style>
 </head>
 <body>
-    <pre><code class="language-cpp">class Zero{
-public:
-    int operator()() const {
-        return (long int)this;
-    }
-private:
-    Zero() = delete;
+    <main class="frame">
+        <div class="window" id="window" tabindex="0">
+            <pre class="line-numbers match-braces"><code class="language-cpp">#include &lt;algorithm&gt;
+#include &lt;array&gt;
+
+namespace {
+
+// Z combinator
+constexpr auto fix = [](auto functional) {
+  auto knot = [=](auto self, auto arg) -&gt; decltype(arg) {
+    return functional([=](auto inner) { return self(self, inner); })(arg);
+  };
+  return [=](auto arg) { return knot(knot, arg); };
 };
-    
-int main(void) {
-    return (*(Zero *)nullptr)();
+
+// a marked cell holds the address of a tape
+constexpr std::array&lt;void const*, 112&gt; tape = [] {
+  std::array&lt;void const*, 112&gt; cells{};
+  std::fill_n(cells.begin(), 101, &amp;tape);
+  return cells;
+}();
+using head = decltype(tape)::const_iterator;
+
+// McCarthy 91 function:
+// from any cell &lt;= 101 the head halts on cell 91
+constexpr auto mccarthy = fix([](auto recurse) {
+  return [=](head cell) -&gt; head {
+    return *cell == nullptr
+      ? cell - 10
+      : recurse(recurse(cell + 11));
+  };
+});
+
+}  // namespace
+
+auto main() -&gt; int {
+  return mccarthy(tape.begin()) - mccarthy(std::ranges::find(tape, nullptr));
 }</code></pre>
+        </div>
+        <div class="mode-line" aria-hidden="true"><span>-UUU:%%--F1  </span><b id="ml-buffer">nullptr.cpp</b><span>   </span><span id="ml-pos">All</span><span>  L</span><span id="ml-line">1</span><span>    (C++//l) </span><span class="ml-fill" id="ml-fill"></span></div>
+        <div class="echo-area" id="echo" aria-live="polite"></div>
+    </main>
     <script src="script/prism.js"></script>
+    <script src="script/emacs.js"></script>
 </body>
 </html>

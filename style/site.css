@@ -1,0 +1,243 @@
+/* SPDX-License-Identifier: BSD-3-Clause */
+/* SPDX-FileCopyrightText: Copyright (c) Jeff C. Jensen */
+
+:root {
+    color-scheme: dark;
+
+    --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "DejaVu Sans Mono", "Liberation Mono", monospace;
+    --size: clamp(12px, 0.45vw + 9.5px, 16px);
+    --leading: 1.45;
+
+    --bg: #090a0c;
+    --fg: #c3c7cc;
+    --fg-bright: #e6e8eb;
+    --line-number: #3d424a;
+    --line-number-current: #9aa1ab;
+    --region: #262c45;
+    --paren-match: #3a4256;
+
+    --mode-line-bg: #2b3038;
+    --mode-line-fg: #c9cdd2;
+    --mode-line-dim: #6b727c;
+
+    --comment: #5d6470;
+    --keyword: #b29bff;
+    --type: #5fd7c6;
+    --function: #7cb6ff;
+    --number: #e5b567;
+    --string: #9ccc8a;
+    --macro: #d38aa8;
+    --operator: #8f99a6;
+    --punctuation: #6f7884;
+    --null: #ff4f7b;
+}
+
+html,
+body {
+    height: 100%;
+}
+
+body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--mono);
+    font-size: var(--size);
+    line-height: var(--leading);
+    -webkit-font-smoothing: antialiased;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+}
+
+/* crt scanlines and vignette */
+body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background:
+        repeating-linear-gradient(to bottom, rgb(255 255 255 / 0.018) 0 1px, transparent 1px 3px),
+        radial-gradient(ellipse at center, transparent 55%, rgb(0 0 0 / 0.6) 100%);
+}
+
+::selection {
+    background: var(--region);
+}
+
+.frame {
+    box-sizing: border-box;
+    height: 100vh;
+    height: 100dvh;
+    display: grid;
+    grid-template-rows: minmax(0, 1fr) auto auto;
+    padding:
+        calc(env(safe-area-inset-top, 0px) + 0.75rem)
+        calc(env(safe-area-inset-right, 0px) + 0.75rem)
+        calc(env(safe-area-inset-bottom, 0px) + 0.5rem)
+        calc(env(safe-area-inset-left, 0px) + 0.75rem);
+}
+
+.window {
+    overflow: auto;
+    outline: none;
+    scrollbar-width: none;
+}
+
+.window::-webkit-scrollbar {
+    display: none;
+}
+
+/* long lines wrap at the window edge, splitting a token only when it cannot fit on a row of its own */
+.window pre {
+    margin: 0;
+    padding: 0 1ch 0 var(--gutter);
+    font: inherit;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    tab-size: 4;
+    counter-reset: linenumber;
+}
+
+.window code {
+    position: relative;
+    display: block;
+    font: inherit;
+}
+
+/* each number is stretched to the height of its wrapped line */
+.line-numbers-rows {
+    position: absolute;
+    top: 0;
+    left: calc(-1 * var(--gutter));
+    box-sizing: border-box;
+    width: var(--gutter);
+    padding-right: 1ch;
+    color: var(--line-number);
+    text-align: right;
+    pointer-events: none;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.line-numbers-rows > span {
+    display: block;
+    counter-increment: linenumber;
+}
+
+.line-numbers-rows > span::before {
+    content: counter(linenumber);
+}
+
+.line-numbers-rows > .current {
+    color: var(--line-number-current);
+}
+
+.cursor {
+    background: var(--fg-bright);
+    color: var(--bg);
+    text-shadow: none;
+    animation: blink 1s step-end 10;
+}
+
+/* emacs stops blinking after blink-cursor-blinks (10) cycles */
+@keyframes blink {
+    50% {
+        background: transparent;
+        color: inherit;
+    }
+}
+
+.mode-line {
+    display: flex;
+    overflow: hidden;
+    white-space: pre;
+    background: var(--mode-line-bg);
+    color: var(--mode-line-fg);
+}
+
+.mode-line b {
+    color: var(--fg-bright);
+    font-weight: 700;
+}
+
+.ml-fill {
+    flex: 1;
+    overflow: hidden;
+    color: var(--mode-line-dim);
+}
+
+.echo-area {
+    min-height: calc(var(--leading) * 1em);
+    white-space: pre;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .cursor {
+        animation: none;
+    }
+}
+
+/* syntax */
+
+.token.comment,
+.token.prolog,
+.token.doctype,
+.token.cdata {
+    color: var(--comment);
+}
+
+.token.keyword,
+.token.builtin,
+.token.atrule {
+    color: var(--keyword);
+}
+
+.token.class-name,
+.token.base-clause,
+.token.namespace {
+    color: var(--type);
+}
+
+.token.function,
+.token.generic-function {
+    color: var(--function);
+}
+
+.token.number,
+.token.boolean,
+.token.constant {
+    color: var(--number);
+}
+
+.token.string,
+.token.raw-string,
+.token.char {
+    color: var(--string);
+}
+
+.token.macro,
+.token.macro .token.directive,
+.token.macro .token.directive-hash {
+    color: var(--macro);
+}
+
+.token.operator {
+    color: var(--operator);
+}
+
+.token.punctuation {
+    color: var(--punctuation);
+}
+
+.token.keyword.keyword-nullptr {
+    color: var(--null);
+    text-shadow: 0 0 0.6em rgb(255 79 123 / 0.55);
+}
+
+.token.punctuation.brace-hover,
+.token.punctuation.brace-selected {
+    background: var(--paren-match);
+    color: var(--fg-bright);
+}
